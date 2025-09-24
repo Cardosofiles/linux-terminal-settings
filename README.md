@@ -8,6 +8,8 @@
 [![Node.js](https://img.shields.io/badge/Node.js-Setup-339933?style=for-the-badge&logo=node.js&logoColor=white)](#7-nodejs-com-fnm-fast-node-manager)
 [![Java](https://img.shields.io/badge/Java-SDKMAN-007396?style=for-the-badge&logo=java&logoColor=white)](#8-java-maven-e-gradle-com-sdkman)
 [![Docker](https://img.shields.io/badge/Docker-WSL-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#9-docker-no-wsl)
+[![Git](https://img.shields.io/badge/Git-Config-F05032?style=for-the-badge&logo=git&logoColor=white)](#configurar-git-global)
+[![GitHub](https://img.shields.io/badge/GitHub-CLI-181717?style=for-the-badge&logo=github&logoColor=white)](#11-github-cli-e-chave-ssh)
 
 Este guia configura um terminal moderno e produtivo no Windows via WSL (Ubuntu), com Zsh + Oh My Zsh, tema Powerlevel10k, plugins úteis, FZF, Node.js (fnm + pnpm), Java/Maven/Gradle (SDKMAN!), Docker integrado ao WSL e utilitários extras. Ao final, você terá um terminal rápido, bonito e pronto para desenvolvimento.
 
@@ -571,6 +573,22 @@ ssh -T git@github.com
 - Docker funcionando no WSL integrado ao Windows
 - GitHub CLI instalado e configurado
 - Utilitários extras (`bat`, `fd`, `tree`, `neofetch`, etc.)
+
+## Dicas Úteis
+
+- Use `p10k configure` a qualquer momento para reconfigurar o Powerlevel10k.
+- Use `gh help` para ver comandos do GitHub CLI.
+- Use `sdk list` para ver versões disponíveis no SDKMAN!.
+- Use `docker --help` para ver comandos do Docker.
+- use `fnm help` para ver comandos do fnm.
+- Use `pnpm help` para ver comandos do pnpm.
+
+- Rode o comando:
+
+```bash
+# Irá manter manter o sistema atualizado e limpo.
+sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y && sudo apt autoclean
+```
 
 ---
 
