@@ -513,10 +513,18 @@ sudo apt update && sudo apt install -y gh
 ### Configurar Git (global)
 
 ```bash
+# Configure seu nome e email
 git config --global user.name "Seu Nome"
 git config --global user.email "seu-email@exemplo.com"
+
+# Sempre inicializar repositórios com a branch 'main'
 git config --global init.defaultBranch main
+
+# Não fazer rebase ao fazer pull
 git config --global pull.rebase false
+
+# Verifique as configurações
+git config --list
 ```
 
 ### Gerar Chave SSH e adicionar no GitHub
