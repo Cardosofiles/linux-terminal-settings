@@ -457,7 +457,10 @@ gradle -v
 ## 9) Docker no WSL
 
 [![Docker](https://img.shields.io/badge/Docker-Desktop-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/products/docker-desktop/)
+[![Docker CLI](https://img.shields.io/badge/Docker-CLI-2496ED?style=flat&logo=docker&logoColor=white)](https://docs.docker.com/engine/install/ubuntu/)
 [![WSL Integration](https://img.shields.io/badge/WSL-Integration-0078D4?style=flat&logo=windows&logoColor=white)](https://docs.docker.com/desktop/wsl/)
+
+### Opção 1: Docker Desktop + WSL Integration (Recomendado)
 
 - Instale o Docker Desktop no Windows.
 - Em Docker Desktop → Settings → Resources → WSL Integration, habilite seu Ubuntu.
@@ -472,6 +475,71 @@ newgrp docker
 # Teste
 docker run hello-world
 ```
+
+### Opção 2: Instalar apenas o Docker CLI no WSL (Ubuntu)
+
+Se preferir usar apenas o CLI do Docker no WSL conectado ao Docker Desktop:
+
+#### 1. Atualize os pacotes
+
+```bash
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg
+```
+
+#### 2. Adicione o repositório oficial do Docker
+
+```bash
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+```
+
+#### 3. Instale somente o CLI
+
+```bash
+sudo apt-get install -y docker-ce-cli docker-compose-plugin
+```
+
+Isso instala:
+
+- `docker` (CLI)
+- `docker compose` (plugin moderno)
+
+#### 4. Configure a conexão com o Docker Desktop
+
+No Docker Desktop (Windows), certifique-se de:
+
+- Ele está aberto e rodando
+- O Ubuntu WSL está ativado em "Settings → Resources → WSL Integration"
+
+Adicione seu usuário ao grupo docker:
+
+```bash
+sudo groupadd docker || true
+sudo usermod -aG docker "$USER"
+newgrp docker
+```
+
+#### 5. Teste a instalação
+
+```bash
+# Verifique a versão do Docker CLI
+docker version
+
+# Teste com um container
+docker run hello-world
+
+# Teste o Docker Compose
+docker compose version
+```
+
+**Nota:** Com esta configuração, você usa o Docker CLI no WSL, mas o Docker Engine roda no Docker Desktop (Windows). Isso oferece melhor performance e integração.
 
 ## 10) Extras recomendados
 
