@@ -13,6 +13,8 @@
 
 Este guia configura um terminal moderno e produtivo no Windows via WSL (Ubuntu), com Zsh + Oh My Zsh, tema Powerlevel10k, plugins úteis, FZF, Node.js (fnm + pnpm), Java/Maven/Gradle (SDKMAN!), Docker integrado ao WSL e utilitários extras. Ao final, você terá um terminal rápido, bonito e pronto para desenvolvimento.
 
+[![My Skills](https://skillicons.dev/icons?i=windows,powershell,linux,ubuntu,java,maven,gradle,nodejs,npm,pnpm,docker&theme=light)](https://skillicons.dev)
+
 </div>
 
 - Testado em: Windows 11 + WSL (Ubuntu)
