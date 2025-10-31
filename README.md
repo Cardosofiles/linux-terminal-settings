@@ -127,6 +127,12 @@ source ~/.zshrc
 
 O assistente do Powerlevel10k abrirá para configurar o visual.
 
+<div align="right">
+
+[⬆️ Voltar ao topo](#top)
+
+</div>
+
 ---
 
 ### Alternativa: Starship (prompt)
@@ -395,6 +401,12 @@ source ~/.zshrc
 sudo apt install -y fzf
 ```
 
+<div align="right">
+
+[⬆️ Voltar ao topo](#top)
+
+</div>
+
 ## 7) Node.js com fnm (Fast Node Manager)
 
 [![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -564,6 +576,14 @@ Garanta que `~/.local/bin` está no PATH (adicione ao `~/.zshrc` se necessário)
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
 ```
+
+
+<div align="right">
+
+[⬆️ Voltar ao topo](#top)
+
+</div>
+
 
 ## 11) GitHub CLI e Chave SSH
 
