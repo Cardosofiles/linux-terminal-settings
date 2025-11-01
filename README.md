@@ -22,6 +22,8 @@ Este guia configura um terminal moderno e produtivo no Windows via WSL (Ubuntu),
 
 ## Índice
 
+### 📚 Guia Principal
+
 - [Introdução e Pré-requisitos](#pré-requisitos)
 - [Instalação do WSL (Ubuntu)](#1-instale-e-configure-o-wsl-ubuntu)
 - [Atualização do sistema](#2-atualize-o-sistema)
@@ -38,6 +40,22 @@ Este guia configura um terminal moderno e produtivo no Windows via WSL (Ubuntu),
 - [Dicas de Fonte e Terminal](#dicas-de-fonte-e-terminal-windows)
 - [Problemas Comuns (Troubleshooting)](#problemas-comuns-troubleshooting)
 - [Resultado Final](#resultado-final)
+- [Dicas Úteis](#dicas-úteis)
+- [Configuração do ZSH](#minhas-configurações-do-zsh)
+
+### 📖 Documentação dos Scripts (`/docs`)
+
+- [check-version.md](docs/check-version.md) - Verificar versões de ferramentas instaladas
+- [docker-login.md](docs/docker-login.md) - Autenticação no Docker Hub
+- [fastify-postgresql-script.md](docs/fastify-postgresql-script.md) - Criar API Fastify com PostgreSQL
+- [git-push-faculdade.md](docs/git-push-faculdade.md) - Push para remote faculdade
+- [git-push-origin.md](docs/git-push-origin.md) - Push para remote origin
+- [install.md](docs/install.md) - Instalação automatizada do ambiente
+- [next-shadcn-biome.md](docs/next-shadcn-biome.md) - Criar projeto Next.js com Biome
+- [next-shadcn-prettierrc.md](docs/next-shadcn-prettierrc.md) - Criar projeto Next.js com Prettier
+- [react-router-v7.md](docs/react-router-v7.md) - Criar projeto React Router v7
+- [restart-docker.md](docs/restart-docker.md) - Reiniciar containers Docker
+- [vscode-extensions-install.md](docs/vscode-extensions-install.md) - Instalar extensões VS Code
 
 ## Pré-requisitos
 
@@ -688,9 +706,11 @@ ssh -T git@github.com
 sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y && sudo apt autoclean
 ```
 
-## Minas Configurações do ZSH
+## Minhas Configurações do ZSH
 
-- Ao final da instalação, configure o `~/.zshrc` conforme necessário.
+### Configuração do ~/.zshrc
+
+Ao final da instalação, configure o `~/.zshrc` conforme necessário:
 
 ```bash
 # ================================
@@ -796,6 +816,175 @@ alias taskmaster='task-master'
 # ------------------------
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+```
+
+## Scripts Disponíveis em `/src`
+
+Este repositório inclui diversos scripts bash para automatizar tarefas comuns de desenvolvimento. Abaixo estão as instruções de uso:
+
+#### 🔍 Verificar Versões das Ferramentas
+
+```bash
+./src/check-version.sh
+```
+
+Exibe as versões instaladas de Java, Node.js, Python, Docker, PHP, .NET e outras ferramentas de desenvolvimento.
+
+📖 **Documentação completa:** [docs/check-version.md](docs/check-version.md)
+
+---
+
+#### 🐳 Autenticação no Docker Hub
+
+```bash
+./src/docker-login.sh
+```
+
+Realiza login no Docker Hub e exibe informações sobre containers e imagens.
+
+📖 **Documentação completa:** [docs/docker-login.md](docs/docker-login.md)
+
+---
+
+#### ⚡ Criar API Fastify com PostgreSQL
+
+```bash
+./src/fastify-postgresql-script.sh
+```
+
+Cria um projeto completo de API REST com Fastify, TypeScript, PostgreSQL, PgAdmin, Docker e Drizzle ORM.
+
+📖 **Documentação completa:** [docs/fastify-postgresql-script.md](docs/fastify-postgresql-script.md)
+
+---
+
+#### 📤 Git Push Automatizado
+
+```bash
+# Push para remote 'origin'
+./src/git-push-origin.sh
+
+# Push para remote 'faculdade'
+./src/git-push-faculdade.sh
+```
+
+Automatiza o processo de `git add`, `commit` e `push` com detecção automática da branch.
+
+📖 **Documentação completa:**
+
+- [docs/git-push-origin.md](docs/git-push-origin.md)
+- [docs/git-push-faculdade.md](docs/git-push-faculdade.md)
+
+---
+
+#### 🎨 Criar Projeto Next.js com Shadcn UI
+
+```bash
+# Com Biome (linter/formatter moderno)
+./src/next-shadcn-biome.sh
+
+# Com Prettier + ESLint (tradicional)
+./src/next-shadcn-prettierrc.sh
+```
+
+Cria projeto Next.js configurado com TypeScript, Tailwind CSS, Shadcn UI e opção de linter.
+
+📖 **Documentação completa:**
+
+- [docs/next-shadcn-biome.md](docs/next-shadcn-biome.md)
+- [docs/next-shadcn-prettierrc.md](docs/next-shadcn-prettierrc.md)
+
+---
+
+#### ⚛️ Criar Projeto React Router v7
+
+```bash
+./src/react-router-v7.sh
+```
+
+Cria projeto React com Vite, TypeScript, React Router v7, Tailwind CSS, ESLint e Prettier.
+
+📖 **Documentação completa:** [docs/react-router-v7.md](docs/react-router-v7.md)
+
+---
+
+#### 🔄 Reiniciar Containers Docker
+
+```bash
+./src/restart-docker.sh
+```
+
+Para containers, reconstrói imagens e exibe logs em tempo real.
+
+📖 **Documentação completa:** [docs/restart-docker.md](docs/restart-docker.md)
+
+---
+
+#### 🧩 Instalar Extensões do VS Code
+
+```bash
+./src/vscode-extensions-install.sh
+```
+
+Instala extensões do VS Code a partir de um arquivo `vscode-extensions.txt`.
+
+📖 **Documentação completa:** [docs/vscode-extensions-install.md](docs/vscode-extensions-install.md)
+
+---
+
+#### 🚀 Instalação Automatizada do Ambiente
+
+```bash
+./src/install.sh
+```
+
+Script completo que instala e configura automaticamente todo o ambiente de desenvolvimento (Zsh, Oh My Zsh, Powerlevel10k, Node.js, Java, Docker, etc.).
+
+📖 **Documentação completa:** [docs/install.md](docs/install.md)
+
+---
+
+### 📋 Como Configurar os Aliases
+
+Para facilitar o uso dos scripts, você pode adicionar aliases no seu `~/.zshrc`:
+
+```bash
+# Copiar scripts para ~/bin
+mkdir -p ~/bin
+cp src/*.sh ~/bin/
+chmod +x ~/bin/*.sh
+
+# Adicionar aliases no ~/.zshrc
+cat >> ~/.zshrc << 'EOF'
+
+# ------------------------
+# Custom Script Aliases
+# ------------------------
+alias git-push-origin='~/bin/git-push-origin.sh'
+alias git-push-faculdade='~/bin/git-push-faculdade.sh'
+alias next-shadcn-biome='~/bin/next-shadcn-biome.sh'
+alias next-shadcn-prettierrc='~/bin/next-shadcn-prettierrc.sh'
+alias restart-docker='~/bin/restart-docker.sh'
+alias docker-login='~/bin/docker-login.sh'
+alias react-router-v7='~/bin/react-router-v7.sh'
+alias create-fastify-app='~/bin/fastify-postgresql-script.sh'
+alias versions='~/bin/check-version.sh'
+EOF
+
+# Recarregar configuração
+source ~/.zshrc
+```
+
+Depois de configurar os aliases, você pode executar os scripts simplesmente digitando o alias:
+
+```bash
+versions                    # Verifica versões das ferramentas
+docker-login               # Login no Docker Hub
+create-fastify-app         # Cria API Fastify
+git-push-origin            # Git push para origin
+next-shadcn-biome          # Cria projeto Next.js com Biome
+react-router-v7            # Cria projeto React Router
+restart-docker             # Reinicia containers Docker
 ```
 
 ---
