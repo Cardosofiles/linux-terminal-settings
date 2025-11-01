@@ -44,6 +44,7 @@ bash src/docker-login.sh
 ### Configurar Credenciais Antes de Usar
 
 #### Opção 1: Variáveis de Ambiente Temporárias
+
 ```bash
 export DOCKER_USERNAME="seu-usuario"
 export DOCKER_TOKEN="seu-token-aqui"
@@ -51,6 +52,7 @@ export DOCKER_TOKEN="seu-token-aqui"
 ```
 
 #### Opção 2: Adicionar ao ~/.zshrc (Permanente)
+
 ```bash
 # Adicionar ao final do ~/.zshrc
 echo 'export DOCKER_USERNAME="seu-usuario"' >> ~/.zshrc
@@ -61,6 +63,7 @@ source ~/.zshrc
 ```
 
 #### Opção 3: Usar Arquivo .env (Mais Seguro)
+
 ```bash
 # Criar arquivo de credenciais
 cat > ~/.docker-credentials << EOF
