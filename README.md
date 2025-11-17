@@ -11,11 +11,11 @@
 [![.NET](https://img.shields.io/badge/.NET-SDK-512BD4?style=for-the-badge&logo=.net&logoColor=white)](#10-c-net---instalação-e-configuração)
 [![Docker](https://img.shields.io/badge/Docker-WSL-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#11-docker-no-wsl)
 [![Git](https://img.shields.io/badge/Git-Config-F05032?style=for-the-badge&logo=git&logoColor=white)](#configurar-git-global)
-[![GitHub](https://img.shields.io/badge/GitHub-CLI-181717?style=flat&logo=github&logoColor=white)](#13-github-cli-e-chave-ssh)
+[![GitHub](https://img.shields.io/badge/GitHub-CLI-181717?style=for-the-badge&logo=github&logoColor=white)](#13-github-cli-e-chave-ssh)
 
 Este guia configura um terminal moderno e produtivo no Windows via WSL (Ubuntu), com Zsh + Oh My Zsh, tema Powerlevel10k, plugins úteis, FZF, Node.js (fnm + pnpm), Java/Maven/Gradle (SDKMAN!), Docker integrado ao WSL e utilitários extras. Ao final, você terá um terminal rápido, bonito e pronto para desenvolvimento.
 
-[![My Skills](https://skillicons.dev/icons?i=linux,ubuntu,python,java,maven,gradle,nodejs,npm,pnpm,cs,dotnet,php,docker,github&theme=dark)](https://skillicons.dev)
+[![My Skills](https://skillicons.dev/icons?i=linux,ubuntu,python,java,maven,gradle,nodejs,npm,pnpm,cs,dotnet,php,docker,git,github&theme=dark)](https://skillicons.dev)
 
 </div>
 
