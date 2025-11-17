@@ -7,18 +7,22 @@
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-Linux-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://ubuntu.com/wsl)
 [![Node.js](https://img.shields.io/badge/Node.js-Setup-339933?style=for-the-badge&logo=node.js&logoColor=white)](#7-nodejs-com-fnm-fast-node-manager)
 [![Java](https://img.shields.io/badge/Java-SDKMAN-007396?style=for-the-badge&logo=java&logoColor=white)](#8-java-maven-e-gradle-com-sdkman)
-[![Docker](https://img.shields.io/badge/Docker-WSL-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#9-docker-no-wsl)
+[![PHP](https://img.shields.io/badge/PHP-Composer-777BB4?style=for-the-badge&logo=php&logoColor=white)](#9-php)
+[![.NET](https://img.shields.io/badge/.NET-SDK-512BD4?style=for-the-badge&logo=.net&logoColor=white)](#10-c-net---instalação-e-configuração)
+[![Docker](https://img.shields.io/badge/Docker-WSL-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#11-docker-no-wsl)
 [![Git](https://img.shields.io/badge/Git-Config-F05032?style=for-the-badge&logo=git&logoColor=white)](#configurar-git-global)
-[![GitHub](https://img.shields.io/badge/GitHub-CLI-181717?style=for-the-badge&logo=github&logoColor=white)](#11-github-cli-e-chave-ssh)
+[![GitHub](https://img.shields.io/badge/GitHub-CLI-181717?style=flat&logo=github&logoColor=white)](#13-github-cli-e-chave-ssh)
 
 Este guia configura um terminal moderno e produtivo no Windows via WSL (Ubuntu), com Zsh + Oh My Zsh, tema Powerlevel10k, plugins úteis, FZF, Node.js (fnm + pnpm), Java/Maven/Gradle (SDKMAN!), Docker integrado ao WSL e utilitários extras. Ao final, você terá um terminal rápido, bonito e pronto para desenvolvimento.
 
-[![My Skills](https://skillicons.dev/icons?i=windows,powershell,linux,ubuntu,java,maven,gradle,nodejs,npm,pnpm,docker&theme=light)](https://skillicons.dev)
+[![My Skills](https://skillicons.dev/icons?i=linux,ubuntu,python,java,maven,gradle,nodejs,npm,pnpm,cs,dotnet,php,docker,github&theme=dark)](https://skillicons.dev)
 
 </div>
 
 - Testado em: Windows 11 + WSL (Ubuntu)
 - Shell: `zsh`
+
+<img src="docs/images/terminal-wsl-ubuntu.png" alt="Resultado Final do Terminal" />
 
 ## Índice
 
@@ -34,9 +38,11 @@ Este guia configura um terminal moderno e produtivo no Windows via WSL (Ubuntu),
 - [FZF](#6-fzf-busca-interativa)
 - [Node.js (fnm) + pnpm](#7-nodejs-com-fnm-fast-node-manager)
 - [Java/Maven/Gradle (SDKMAN!)](#8-java-maven-e-gradle-com-sdkman)
-- [Docker no WSL](#9-docker-no-wsl)
-- [Extras recomendados](#10-extras-recomendados)
-- [GitHub CLI e Chave SSH](#11-github-cli-e-chave-ssh)
+- [PHP + Composer](#9-php)
+- [.NET SDK](#10-net-sdk)
+- [Docker no WSL](#11-docker-no-wsl)
+- [Extras recomendados](#12-extras-recomendados)
+- [GitHub CLI e Chave SSH](#13-github-cli-e-chave-ssh)
 - [Dicas de Fonte e Terminal](#dicas-de-fonte-e-terminal-windows)
 - [Problemas Comuns (Troubleshooting)](#problemas-comuns-troubleshooting)
 - [Resultado Final](#resultado-final)
@@ -163,7 +169,7 @@ O assistente do Powerlevel10k abrirá para configurar o visual.
 curl -sS https://starship.rs/install.sh | sh
 ```
 
-- Adicione aoo final do `~/.zshrc`:
+- Adicione ao final do `~/.zshrc`:
 
 ```bash
 eval "$(starship init zsh)"
@@ -414,10 +420,13 @@ source ~/.zshrc
 ## 6) FZF (busca interativa)
 
 [![fzf](https://img.shields.io/badge/fzf-Fuzzy%20Finder-23B5D3?style=flat)](https://github.com/junegunn/fzf)
+[![autojump](https://img.shields.io/badge/autojump-Directory%20Jump-orange?style=flat)](https://github.com/wting/autojump)
 
 ```bash
-sudo apt install -y fzf
+sudo apt install -y fzf autojump
 ```
+
+> **Nota:** O `autojump` é usado na configuração de exemplo do `.zshrc`. Instale-o aqui para evitar erros futuros.
 
 <div align="right">
 
@@ -486,7 +495,196 @@ mvn -v
 gradle -v
 ```
 
-## 9) Docker no WSL
+### Observações
+
+- O SDKMAN! facilita a instalação e troca entre múltiplas versões do Java, Maven e Gradle.
+- Use `sdk list java`, `sdk list maven` e `sdk list gradle` para ver versões disponíveis.
+
+### Configuração para o Intelija IDEA (opcional):
+
+- Para configurar a conexão do IntelliJ IDEA no Windows com o WSL, será necessário fazer o download do JetBrains Gateway no Windows:
+
+```bash
+https://www.jetbrains.com/remote-development/gateway/
+```
+
+## 9) Php
+
+[![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?style=flat&logo=php&logoColor=white)](https://www.php.net/)
+[![Composer](https://img.shields.io/badge/Composer-Dependency%20Manager-888888?style=flat&logo=composer&logoColor=white)](https://getcomposer.org/)
+
+### 1. Adicionar Repositório PPA do PHP
+
+```bash
+# Adicionar repositório Ondrej para versões mais recentes do PHP
+sudo apt install -y software-properties-common
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt update
+```
+
+### 2. Instalar PHP 8.3 (ou versão desejada)
+
+```bash
+# Instalar PHP CLI
+sudo apt install -y php8.3-cli
+
+# Instalar extensões mais comuns
+sudo apt install -y \
+  php8.3-curl \
+  php8.3-mbstring \
+  php8.3-xml \
+  php8.3-zip \
+  php8.3-mysql \
+  php8.3-pgsql \
+  php8.3-sqlite3 \
+  php8.3-gd \
+  php8.3-bcmath \
+  php8.3-intl \
+  php8.3-redis \
+  php8.3-xdebug
+
+# Verificar instalação
+php -v
+
+# Listar extensões instaladas
+php -m
+```
+
+### 3. Instalar Composer (Gerenciador de Dependências)
+
+```bash
+# Baixar e instalar Composer (método mais robusto)
+curl -sS https://getcomposer.org/installer | php -- --install-dir=/tmp
+sudo mv /tmp/composer.phar /usr/local/bin/composer
+sudo chmod +x /usr/local/bin/composer
+
+# Verificar instalação
+composer --version
+```
+
+### 4. Configurar PHP
+
+```bash
+# Editar php.ini
+sudo nano /etc/php/8.3/cli/php.ini
+
+# Configurações recomendadas:
+# memory_limit = 512M
+# max_execution_time = 300
+# upload_max_filesize = 100M
+# post_max_size = 100M
+```
+
+### 5. Instalar Múltiplas Versões do PHP (Opcional)
+
+```bash
+# Instalar PHP 8.2
+sudo apt install -y php8.2-cli php8.2-fpm
+
+# Instalar PHP 8.1
+sudo apt install -y php8.1-cli php8.1-fpm
+
+# Alternar entre versões
+sudo update-alternatives --config php
+```
+
+### 6. Ferramentas Úteis para PHP
+
+```bash
+# PHPUnit (Testing)
+composer global require phpunit/phpunit
+
+# PHP CS Fixer (Code Style)
+composer global require friendsofphp/php-cs-fixer
+
+# PHP CodeSniffer
+composer global require squizlabs/php_codesniffer
+
+# Adicionar Composer global ao PATH
+echo 'export PATH="$HOME/.composer/vendor/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+## 10) C# (.NET) - Instalação e Configuração
+
+[![C#](https://img.shields.io/badge/C%23-239120?style=flat&logo=c-sharp&logoColor=white)](https://learn.microsoft.com/dotnet/csharp/)
+[![.NET](https://img.shields.io/badge/.NET-512BD4?style=flat&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+
+### 1. Instalar .NET SDK (Método Recomendado via Microsoft)
+
+```bash
+# Baixar e adicionar chave de assinatura da Microsoft
+wget https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+
+# Atualizar repositórios
+sudo apt update
+```
+
+### 2. Instalar .NET 8.0 SDK (LTS - Recomendado)
+
+```bash
+# Instalar .NET 8.0 SDK (inclui runtime)
+sudo apt install -y dotnet-sdk-8.0
+
+# Verificar instalação
+dotnet --version
+dotnet --list-sdks
+dotnet --list-runtimes
+```
+
+### 3. Instalar Múltiplas Versões do .NET (Opcional)
+
+```bash
+# .NET 7.0
+sudo apt install -y dotnet-sdk-7.0
+
+# .NET 6.0 (LTS)
+sudo apt install -y dotnet-sdk-6.0
+
+# Verificar todas as versões instaladas
+dotnet --list-sdks
+```
+
+### 4. Configurar Variáveis de Ambiente
+
+```bash
+# Adicionar ao ~/.zshrc
+cat >> ~/.zshrc << 'EOF'
+
+# .NET Configuration
+export DOTNET_ROOT=/usr/share/dotnet
+export PATH="$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools"
+export DOTNET_CLI_TELEMETRY_OPTOUT=1  # Desabilitar telemetria (opcional)
+EOF
+
+# Recarregar configuração
+source ~/.zshrc
+```
+
+> **Nota:** Se o .NET estiver em outro local, verifique com `which dotnet` e ajuste o `DOTNET_ROOT` conforme necessário.
+
+### 5. Ferramentas Globais do .NET
+
+```bash
+# Entity Framework Core Tools
+dotnet tool install --global dotnet-ef
+
+# ASP.NET Core Code Generator
+dotnet tool install --global dotnet-aspnet-codegenerator
+
+# User Secrets Manager
+dotnet tool install --global dotnet-user-secrets
+
+# Format (Code Formatter)
+dotnet tool install --global dotnet-format
+
+# Verificar ferramentas instaladas
+dotnet tool list --global
+```
+
+## 11) Docker no WSL
 
 [![Docker](https://img.shields.io/badge/Docker-Desktop-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/products/docker-desktop/)
 [![Docker CLI](https://img.shields.io/badge/Docker-CLI-2496ED?style=flat&logo=docker&logoColor=white)](https://docs.docker.com/engine/install/ubuntu/)
@@ -507,6 +705,8 @@ newgrp docker
 # Teste
 docker run hello-world
 ```
+
+> **⚠️ Importante:** O comando `newgrp docker` cria uma subshell temporária. Para aplicar permanentemente, feche o terminal e abra novamente, ou execute no PowerShell (Windows): `wsl --shutdown` e reabra o Ubuntu.
 
 ### Opção 2: Instalar apenas o Docker CLI no WSL (Ubuntu)
 
@@ -573,7 +773,7 @@ docker compose version
 
 **Nota:** Com esta configuração, você usa o Docker CLI no WSL, mas o Docker Engine roda no Docker Desktop (Windows). Isso oferece melhor performance e integração.
 
-## 10) Extras recomendados
+## 12) Extras recomendados
 
 [![bat](https://img.shields.io/badge/bat-Cat%20with%20wings-111?style=flat)](https://github.com/sharkdp/bat)
 [![fd](https://img.shields.io/badge/fd-Fast%20Find-111?style=flat)](https://github.com/sharkdp/fd)
@@ -595,15 +795,13 @@ Garanta que `~/.local/bin` está no PATH (adicione ao `~/.zshrc` se necessário)
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-
 <div align="right">
 
 [⬆️ Voltar ao topo](#top)
 
 </div>
 
-
-## 11) GitHub CLI e Chave SSH
+## 13) GitHub CLI e Chave SSH
 
 [![GitHub CLI](https://img.shields.io/badge/GitHub%20CLI-gh-181717?style=flat&logo=github&logoColor=white)](https://cli.github.com/)
 [![SSH](https://img.shields.io/badge/SSH-Keys-000?style=flat)](https://docs.github.com/authentication/connecting-to-github-with-ssh)
@@ -661,6 +859,49 @@ gh auth login
 ssh -T git@github.com
 ```
 
+## Validação da Instalação
+
+[![Validation](https://img.shields.io/badge/Validation-Check-success?style=flat)]()
+
+Após concluir todas as instalações, execute este script para validar:
+
+```bash
+echo "🔍 Validando instalações..."
+echo "==========================================="
+command -v zsh >/dev/null 2>&1 && echo "✅ Zsh instalado: $(zsh --version)" || echo "❌ Zsh não encontrado"
+command -v fnm >/dev/null 2>&1 && echo "✅ fnm instalado: $(fnm --version)" || echo "❌ fnm não encontrado"
+command -v node >/dev/null 2>&1 && echo "✅ Node.js instalado: $(node -v)" || echo "❌ Node.js não encontrado"
+command -v pnpm >/dev/null 2>&1 && echo "✅ pnpm instalado: $(pnpm -v)" || echo "❌ pnpm não encontrado"
+command -v java >/dev/null 2>&1 && echo "✅ Java instalado: $(java -version 2>&1 | head -n 1)" || echo "❌ Java não encontrado"
+command -v mvn >/dev/null 2>&1 && echo "✅ Maven instalado: $(mvn -v | head -n 1)" || echo "❌ Maven não encontrado"
+command -v gradle >/dev/null 2>&1 && echo "✅ Gradle instalado: $(gradle -v | grep Gradle)" || echo "❌ Gradle não encontrado"
+command -v php >/dev/null 2>&1 && echo "✅ PHP instalado: $(php -v | head -n 1)" || echo "❌ PHP não encontrado"
+command -v composer >/dev/null 2>&1 && echo "✅ Composer instalado: $(composer --version)" || echo "❌ Composer não encontrado"
+command -v dotnet >/dev/null 2>&1 && echo "✅ .NET instalado: $(dotnet --version)" || echo "❌ .NET não encontrado"
+command -v docker >/dev/null 2>&1 && echo "✅ Docker instalado: $(docker --version)" || echo "❌ Docker não encontrado"
+command -v gh >/dev/null 2>&1 && echo "✅ GitHub CLI instalado: $(gh --version | head -n 1)" || echo "❌ GitHub CLI não encontrado"
+command -v bat >/dev/null 2>&1 && echo "✅ bat instalado" || echo "❌ bat não encontrado"
+command -v fd >/dev/null 2>&1 && echo "✅ fd instalado" || echo "❌ fd não encontrado"
+echo "==========================================="
+echo "✨ Validação concluída!"
+```
+
+### Validar Versão do WSL
+
+Certifique-se de estar usando **WSL 2** para melhor performance:
+
+```powershell
+# Execute no PowerShell (Windows)
+wsl -l -v
+```
+
+Se estiver usando WSL 1, converta para WSL 2:
+
+```powershell
+# Execute no PowerShell como Administrador
+wsl --set-version Ubuntu 2
+```
+
 ## Dicas de Fonte e Terminal (Windows)
 
 [![Windows Terminal](https://img.shields.io/badge/Windows%20Terminal-Settings-4D4D4D?style=flat&logo=windowsterminal&logoColor=white)](https://aka.ms/terminal)
@@ -673,11 +914,88 @@ ssh -T git@github.com
 
 ## Problemas Comuns (Troubleshooting)
 
-- Plugins sem efeito: confirme a linha `plugins=(...)` no `~/.zshrc` e rode `exec zsh`.
-- Tema sem ícones: instale/seleciona Nerd Font no Windows Terminal.
-- `docker` requer sudo: confirme que seu usuário está no grupo `docker` e que a integração WSL está ativa no Docker Desktop.
-- `fnm` não encontrado após instalar: verifique se o trecho `eval "$(fnm env --use-on-cd)"` está no `~/.zshrc` e recarregue o shell.
-- Binários `fd`/`bat` não encontrados: confirme que `~/.local/bin` está no PATH e que os links simbólicos existem.
+### 🔧 Plugins Zsh sem efeito
+
+- **Sintoma:** Autosuggestions ou syntax highlighting não funcionam
+- **Solução:**
+  ```bash
+  # Verifique a linha plugins no ~/.zshrc
+  grep "plugins=" ~/.zshrc
+  # Recarregue o shell
+  exec zsh
+  ```
+
+### 🎨 Tema sem ícones
+
+- **Sintoma:** Caracteres quebrados ou quadrados no prompt
+- **Solução:** Instale uma Nerd Font (MesloLGS NF ou JetBrainsMono) no Windows e configure no Windows Terminal
+
+### 🐳 Docker requer sudo
+
+- **Sintoma:** `permission denied while trying to connect to the Docker daemon socket`
+- **Solução:**
+  ```bash
+  # Adicione usuário ao grupo docker
+  sudo usermod -aG docker $USER
+  # Feche e reabra o terminal ou reinicie o WSL
+  # No PowerShell (Windows):
+  wsl --shutdown
+  # Reabra o Ubuntu
+  ```
+
+### 📦 fnm não encontrado
+
+- **Sintoma:** `command not found: fnm`
+- **Solução:**
+  ```bash
+  # Verifique se está no ~/.zshrc
+  grep "fnm env" ~/.zshrc
+  # Se não estiver, adicione:
+  echo 'eval "$(fnm env --use-on-cd)"' >> ~/.zshrc
+  source ~/.zshrc
+  ```
+
+### 🔍 Binários fd/bat não encontrados
+
+- **Sintoma:** `command not found: fd` ou `command not found: bat`
+- **Solução:**
+  ```bash
+  # Verifique os links simbólicos
+  ls -la ~/.local/bin/{fd,bat}
+  # Recrie se necessário
+  mkdir -p ~/.local/bin
+  ln -sf "$(which fdfind)" ~/.local/bin/fd
+  ln -sf "$(which batcat)" ~/.local/bin/bat
+  # Verifique o PATH
+  echo $PATH | grep ".local/bin"
+  ```
+
+### ⚙️ .NET não encontrado
+
+- **Sintoma:** `command not found: dotnet`
+- **Solução:**
+  ```bash
+  # Verifique a instalação
+  which dotnet
+  # Se instalado mas não no PATH, adicione:
+  export PATH="$PATH:/usr/share/dotnet"
+  # Torne permanente no ~/.zshrc
+  echo 'export PATH="$PATH:/usr/share/dotnet"' >> ~/.zshrc
+  ```
+
+### 🐘 PHP ou Composer com problemas
+
+- **Sintoma:** Versão errada do PHP ou composer não encontrado
+- **Solução:**
+  ```bash
+  # Listar versões instaladas do PHP
+  update-alternatives --list php
+  # Alternar versão
+  sudo update-alternatives --config php
+  # Verificar Composer
+  which composer
+  composer --version
+  ```
 
 ## Resultado Final
 
@@ -686,6 +1004,8 @@ ssh -T git@github.com
 - FZF para busca/auto-complete
 - Node.js via fnm (gestão simples de versões)
 - Java, Maven e Gradle via SDKMAN!
+- Php 8.3 + Composer
+- .NET SDK via pacotes oficiais da Microsoft
 - Docker funcionando no WSL integrado ao Windows
 - GitHub CLI instalado e configurado
 - Utilitários extras (`bat`, `fd`, `tree`, `neofetch`, etc.)
@@ -711,6 +1031,8 @@ sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y && sudo apt aut
 ### Configuração do ~/.zshrc
 
 Ao final da instalação, configure o `~/.zshrc` conforme necessário:
+
+> **⚠️ Nota sobre o exemplo abaixo:** Esta configuração inclui setup para **Bun** (runtime JavaScript), **Pyenv** (gerenciador de versões Python) e **Autojump** que não estão cobertos nas seções anteriores. Se você não instalou essas ferramentas, pode remover ou comentar as respectivas seções.
 
 ```bash
 # ================================
@@ -760,6 +1082,10 @@ ENABLE_CORRECTION="true"
 # SDKMAN (Java / Maven / Gradle)
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
+
+# --- Java (WSL + Gradle + SDKMAN) ---
+export JAVA_HOME="$HOME/.sdkman/candidates/java/current"
+export PATH="$JAVA_HOME/bin:$PATH"
 
 # FNM (Node.js)
 FNM_PATH="$HOME/.local/share/fnm"
