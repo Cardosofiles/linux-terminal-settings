@@ -5,7 +5,8 @@
 # ------------------------
 # Powerlevel10k instant prompt
 # ------------------------
-typeset -g POWERLEVEL9K_INSTANT_PROMPT=on
+# typeset -g POWERLEVEL9K_INSTANT_PROMPT=on
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
@@ -29,7 +30,7 @@ plugins=(
 source $ZSH/oh-my-zsh.sh
 
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#7f7f7f'
-source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # ------------------------
 # Core Settings
@@ -72,6 +73,15 @@ eval "$(pyenv init - zsh)"
 eval "$(pyenv virtualenv-init -)"
 
 # ------------------------
+# .NET 10 (Manual Install)  
+# ------------------------
+export DOTNET_ROOT="$HOME/.dotnet"
+export PATH="$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools"
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export DOTNET_NOLOGO=1
+
+
+# ------------------------
 # Autojump
 # ------------------------
 [[ -s /usr/share/autojump/autojump.sh ]] && source /usr/share/autojump/autojump.sh
@@ -79,8 +89,7 @@ eval "$(pyenv virtualenv-init -)"
 # ------------------------
 # IDE Aliases
 # ------------------------
-alias idea='/mnt/c/Program\ Files/JetBrains/IntelliJ\ IDEA\ Community\ Edition\ 2024.3.3/bin/idea64.exe'
-alias webstorm='"/mnt/c/Program Files/JetBrains/WebStorm 2025.2.2/bin/webstorm64.exe"'
+alias idea='/mnt/c/Program\ Files/JetBrains/IntelliJ\ IDEA\ 2025.3.1.1/bin/idea64.exe'
 alias cursor='/mnt/c/Users/cardo/AppData/Local/Programs/Cursor/cursor.exe'
 
 # ------------------------
@@ -100,7 +109,53 @@ alias versions='~/bin/check-version.sh'
 alias tm='task-master'
 alias taskmaster='task-master'
 
+# ──────────────────────
+# Useful Aliases
+# ──────────────────────
+
+# System
+alias update='sudo apt update && sudo apt upgrade -y'
+alias cleanup='sudo apt autoremove -y && sudo apt autoclean'
+
+# Navigation
+alias ..='cd ..'            # Go up one directory level
+alias ...='cd ../..'        # Go up two directory levels
+alias ....='cd ../../..'    # Go up three directory levels
+
+# Git
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit -m'
+alias gp='git push'
+alias gl='git log --oneline --graph --decorate'
+
+# Productivity
+alias c='clear'
+alias h='history'
+alias ll='ls -lah'
+
+# Container management
+alias dps='docker ps'
+alias dpsa='docker ps -a'
+alias dstart='docker start'
+alias dstop='docker stop'
+alias drm='docker rm'
+alias drmf='docker rm -f'
+
+# Docker Compose
+alias dc='docker compose'
+alias dcup='docker compose up -d'
+alias dcdown='docker compose down'
+alias dclogs='docker compose logs -f'
+alias dcps='docker compose ps'
+alias dcrestart='docker compose restart'
+
+
 # ------------------------
 # Powerlevel10k Config
 # ------------------------
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+export PATH="$HOME/bin/linux-terminal-settings/src:$PATH"
+
+# bun completions
+[ -s "/home/cardosofiles/.bun/_bun" ] && source "/home/cardosofiles/.bun/_bun"
