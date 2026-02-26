@@ -1,7 +1,7 @@
 #!/bin/bash
 
 clear
-echo "🚀 Criador de API Fastify com Docker, TypeScript, Prisma ORM, PostgreSQL, PgAdmin, ESLint 9 e Prettier"
+echo "🚀 Criador de API Fastify com Docker, TypeScript (@ Alias), Prisma ORM, PostgreSQL, PgAdmin, ESLint 9 e Prettier"
 
 read -p "📦 Digite o nome do projeto: " project_name
 
@@ -18,7 +18,7 @@ cd "$project_name" || exit 1
 # 🧱 Inicializa projeto Node
 echo -e "\n🧱 Inicializando projeto Node.js com TypeScript e Fastify 🔥🚀..."
 
-# Cria package.json otimizado
+# Cria package.json otimizado com scripts para tsc-alias
 echo -e "\n📦 Criando package.json com scripts úteis..."
 cat > package.json <<EOF
 {
@@ -28,7 +28,7 @@ cat > package.json <<EOF
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
     "check": "tsc --noEmit",
     "lint": "eslint .",
@@ -54,14 +54,15 @@ EOF
 
 # Instalando dependências (Fastify, Prisma, Zod)
 pnpm add fastify @fastify/cors @fastify/helmet @fastify/swagger @fastify/swagger-ui @prisma/client dotenv zod fastify-type-provider-zod
-pnpm add -D typescript tsx @types/node prisma pino-pretty
+# Instalando pacotes de Dev incluindo o tsc-alias
+pnpm add -D typescript tsx @types/node prisma pino-pretty tsc-alias
 # Instalando ESLint 9 e Prettier
 pnpm add -D eslint @eslint/js typescript-eslint eslint-config-prettier eslint-plugin-prettier prettier
 
 # Inicializa Prisma
 pnpm dlx prisma init
 
-# Configurando tsconfig.json (Sem comentários dentro do JSON)
+# Configurando tsconfig.json com suporte a Alias (@/)
 cat > tsconfig.json <<EOF
 {
   "compilerOptions": {
@@ -70,7 +71,8 @@ cat > tsconfig.json <<EOF
     "moduleResolution": "NodeNext",
     "lib": ["ES2022"],
     "strict": true,
-    "noEmit": true,
+    "noEmit": false,
+    "outDir": "./dist",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "allowImportingTsExtensions": false,
@@ -78,6 +80,10 @@ cat > tsconfig.json <<EOF
     "skipLibCheck": true,
     "incremental": true,
     "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "types": ["node"]
   },
   "include": ["src"],
@@ -88,7 +94,7 @@ EOF
 # 🌱 Estrutura de diretórios Sênior
 mkdir -p src/utils src/routes src/services src/lib src/test src/modules
 
-# 📄 Cria arquivo de ambiente (.env corrigido)
+# 📄 Cria arquivo de ambiente (.env)
 echo -e "\n📄 Criando arquivo .env..."
 cat > .env <<EOF
 # Porta da aplicação Fastify
@@ -110,7 +116,7 @@ PGADMIN_DEFAULT_PASSWORD=senhaAdmin123
 # URL base da API para Swagger
 API_URL=http://localhost:3333
 
-# Origens permitidas para CORS (separadas por vírgula - Link Markdown corrigido)
+# Origens permitidas para CORS (separadas por vírgula)
 CORS_ORIGIN=http://localhost:3000,http://localhost:3333
 EOF
 
@@ -138,10 +144,9 @@ EOF
 # 📄 Cria docker-compose.yml de Alta Performance
 echo -e "\n📄 Criando docker-compose.yml otimizado..."
 cat > docker-compose.yml <<EOF
-# Versão removida (Obsoleto no V2)
 services:
   db:
-    image: postgres:16-alpine # Bug corrigido: Imagem leve e versão fixada
+    image: postgres:16-alpine
     container_name: ${project_name}-db
     restart: "no"
     ports:
@@ -159,7 +164,6 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      # Bug corrigido: CMD direto sem instanciar bash (Performance)
       test: ["CMD", "pg_isready", "-U", "\${POSTGRES_USER}", "-d", "\${POSTGRES_DB}"]
       interval: 2s
       timeout: 2s
@@ -183,7 +187,7 @@ services:
       TZ: "America/Sao_Paulo"
     depends_on:
       db:
-        condition: service_healthy # Bug corrigido: pgAdmin só sobe quando o banco estiver pronto
+        condition: service_healthy
     volumes:
       - pgadmin-data:/var/lib/pgadmin
       - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
@@ -228,7 +232,7 @@ EOF
 # 📄 Instanciação Global do Prisma (src/lib/prisma.ts)
 cat > src/lib/prisma.ts <<EOF
 import { PrismaClient } from '@prisma/client';
-import { env } from '../utils/env.js';
+import { env } from '@/utils/env.js';
 
 export const prisma = new PrismaClient({
   log: env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
@@ -238,23 +242,22 @@ EOF
 # 📄 src/routes/index.ts
 cat > src/routes/index.ts <<EOF
 import type { FastifyInstance } from 'fastify';
-import { getExample } from './get-example.js';
+import { getExample } from '@/routes/get-example.js';
 
 export async function registerRoutes(app: FastifyInstance) {
   app.register(getExample, { prefix: '/api' });
 }
 EOF
 
-# 📄 src/routes/get-example.ts (Com Prisma)
+# 📄 src/routes/get-example.ts (Utilizando o import com alias @)
 cat > src/routes/get-example.ts <<EOF
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { prisma } from '../lib/prisma.js';
+import { prisma } from '@/lib/prisma.js';
 
 export const getExample: FastifyPluginAsyncZod = async (app) => {
   app.get('/hello', async () => {
-    // Exemplo de query validando a conexão (não falhará se a tabela estiver vazia)
     const count = await prisma.example.count();
-    return { message: 'Hello, Fastify with Prisma ORM!', records: count };
+    return { message: 'Hello, Fastify with Prisma ORM and Aliases!', records: count };
   });
 };
 EOF
@@ -273,8 +276,8 @@ import {
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
 
-import { registerRoutes } from "./routes/index.js";
-import { env } from "./utils/env.js";
+import { registerRoutes } from "@/routes/index.js";
+import { env } from "@/utils/env.js";
 
 const config = env.CORS_ORIGIN;
 const PORT = env.PORT;
@@ -316,7 +319,7 @@ app.register(swaggerUI, { routePrefix: "/docs" });
 
 app.get("/health", () => ({ status: "ok", timestamp: new Date().toISOString() }));
 
-// Registra todas as rotas centralizadas
+// Registra todas as rotas centralizadas usando alias
 app.register(registerRoutes);
 
 const start = async () => {
@@ -347,7 +350,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
-  eslintConfigPrettier, // Desativa regras do ESLint que conflitam com o Prettier
+  eslintConfigPrettier, 
   {
     languageOptions: {
       parserOptions: {
@@ -362,7 +365,6 @@ export default tseslint.config(
     },
   },
   {
-    // Ignora arquivos que não devem ser lintados
     ignores: ['dist/**', 'node_modules/**', 'eslint.config.mjs'],
   }
 );
@@ -439,7 +441,7 @@ read -p "🔗 Deseja criar repositório Git local? (y/n): " git_init
 if [[ "$git_init" == "y" ]]; then
   git init
   git add .
-  git commit -m "feat: initial commit with Fastify, Prisma, ESLint9 and Docker"
+  git commit -m "feat: initial commit with Fastify, Prisma, ESLint9 and Aliases"
 
   read -p "🌐 Deseja criar um repositório no GitHub e fazer push? (y/n): " gh_push
   if [[ "$gh_push" == "y" ]]; then
