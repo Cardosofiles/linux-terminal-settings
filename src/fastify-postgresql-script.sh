@@ -1,7 +1,7 @@
 #!/bin/bash
 
 clear
-echo "🚀 Criador de API Fastify com Docker, TypeScript, PostgreSQL, PgAdmin e Biome"
+echo "🚀 Criador de API Fastify com Docker, TypeScript, Prisma ORM, PostgreSQL, PgAdmin, ESLint 9 e Prettier"
 
 read -p "📦 Digite o nome do projeto: " project_name
 
@@ -15,10 +15,10 @@ fi
 mkdir "$project_name"
 cd "$project_name" || exit 1
 
-# 🧱 Inicializa projeto Node + TypeScript
+# 🧱 Inicializa projeto Node
 echo -e "\n🧱 Inicializando projeto Node.js com TypeScript e Fastify 🔥🚀..."
 
-# Cria package.json com scripts prontos
+# Cria package.json otimizado
 echo -e "\n📦 Criando package.json com scripts úteis..."
 cat > package.json <<EOF
 {
@@ -31,11 +31,16 @@ cat > package.json <<EOF
     "build": "tsc",
     "start": "node dist/server.js",
     "check": "tsc --noEmit",
-    "lint": "biome lint .",
-    "format": "biome format . --write",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
     "docker:up": "docker compose up -d",
-    "docker:stop": "docker stop ${project_name}-db ${project_name}-pgadmin",
-    "docker:down": "docker compose down ${project_name}-db ${project_name}-pgadmin",
+    "docker:stop": "docker compose stop",
+    "docker:down": "docker compose down",
+    "docker:clean": "docker compose down -v",
     "docker:logs": "docker compose logs -f",
     "db:psql": "docker exec -it ${project_name}-db psql -U postgres",
     "pgadmin": "xdg-open http://localhost:5050"
@@ -43,29 +48,27 @@ cat > package.json <<EOF
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "packageManager": "pnpm@10.11.0"
 }
 EOF
 
-pnpm add fastify @fastify/cors @fastify/helmet @fastify/swagger @fastify/swagger-ui drizzle-orm pg dotenv zod
-pnpm add -D typescript tsx @types/node @types/pg @biomejs/biome pino-pretty drizzle-kit drizzle-seed fastify-type-provider-zod
-pnpm dlx biome init --yes
+# Instalando dependências (Fastify, Prisma, Zod)
+pnpm add fastify @fastify/cors @fastify/helmet @fastify/swagger @fastify/swagger-ui @prisma/client dotenv zod fastify-type-provider-zod
+pnpm add -D typescript tsx @types/node prisma pino-pretty
+# Instalando ESLint 9 e Prettier
+pnpm add -D eslint @eslint/js typescript-eslint eslint-config-prettier eslint-plugin-prettier prettier
 
-# Cria tsconfig.json
+# Inicializa Prisma
+pnpm dlx prisma init
+
+# Configurando tsconfig.json (Sem comentários dentro do JSON)
 cat > tsconfig.json <<EOF
 {
-  "\$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "target": "ES2022",
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "lib": [
-      "ES2022",
-      "ESNext.Array",
-      "ESNext.Collection",
-      "ESNext.AsyncIterable"
-    ],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -75,119 +78,138 @@ cat > tsconfig.json <<EOF
     "skipLibCheck": true,
     "incremental": true,
     "isolatedModules": true,
-
-    // Apenas se você usar decorators (ex: class-validator ou typeorm)
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-
-    // Inclui tipagens do Node
     "types": ["node"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }
-
 EOF
 
-# 🌱 Estrutura de diretórios
-mkdir -p src/utils src/routes src/services src/test src/modules
+# 🌱 Estrutura de diretórios Sênior
+mkdir -p src/utils src/routes src/services src/lib src/test src/modules
 
-
-# 📄 Cria arquivo de ambiente
+# 📄 Cria arquivo de ambiente (.env corrigido)
 echo -e "\n📄 Criando arquivo .env..."
 cat > .env <<EOF
 # Porta da aplicação Fastify
 PORT=3333
+NODE_ENV=development
 
 # Configurações do banco PostgreSQL (usar credenciais reais)
-FASTIFY_DATASOURCE_USERNAME=postgres
-FASTIFY_DATASOURCE_PASSWORD=senhaSegura123
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=senhaSegura123
 POSTGRES_DB=${project_name}_db
-DATABASE_URL=postgres://\${FASTIFY_DATASOURCE_USERNAME}:\${FASTIFY_DATASOURCE_PASSWORD}@localhost:5432/\${POSTGRES_DB}
+
+# Prisma URL connection
+DATABASE_URL="postgresql://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@localhost:5432/\${POSTGRES_DB}?schema=public"
 
 # Credenciais de acesso ao pgAdmin
 PGADMIN_DEFAULT_EMAIL=admin@example.com
 PGADMIN_DEFAULT_PASSWORD=senhaAdmin123
 
-# URL base da API para Swagger (opcional)
+# URL base da API para Swagger
 API_URL=http://localhost:3333
 
-# Origens permitidas para CORS (separadas por vírgula)
-CORS_ORIGIN=http://localhost:3000,http://meusite.com
+# Origens permitidas para CORS (separadas por vírgula - Link Markdown corrigido)
+CORS_ORIGIN=http://localhost:3000,http://localhost:3333
 EOF
 
-# # 📄 Cria Dockerfile
-# cat > Dockerfile <<EOF
-# FROM node:20-alpine
-# WORKDIR /app
-# COPY . .
-# RUN corepack enable && corepack prepare pnpm@latest --activate
-# RUN pnpm install
-# CMD ["pnpm", "dev"]
-# EOF
+# Atualiza prisma/schema.prisma para um modelo base
+cat > prisma/schema.prisma <<EOF
+generator client {
+  provider = "prisma-client-js"
+}
 
-# 📄 Cria docker-compose.yml
-echo -e "\n📄 Criando docker-compose.yml para PostgreSQL e PgAdmin..."
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Example {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("examples")
+}
+EOF
+
+# 📄 Cria docker-compose.yml de Alta Performance
+echo -e "\n📄 Criando docker-compose.yml otimizado..."
 cat > docker-compose.yml <<EOF
+# Versão removida (Obsoleto no V2)
 services:
   db:
-    image: postgres
+    image: postgres:16-alpine # Bug corrigido: Imagem leve e versão fixada
     container_name: ${project_name}-db
+    restart: "no"
     ports:
       - '5432:5432'
     env_file:
       - .env
     environment:
-      POSTGRES_USER: \${FASTIFY_DATASOURCE_USERNAME}
-      POSTGRES_PASSWORD: \${FASTIFY_DATASOURCE_PASSWORD}
+      POSTGRES_USER: \${POSTGRES_USER}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
       POSTGRES_DB: \${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+      TZ: "America/Sao_Paulo"
     networks:
       - backend
     volumes:
-      - ./docker/setup.sql:/docker-entrypoint-initdb.d/setup.sql
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U \${FASTIFY_DATASOURCE_USERNAME}']
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      # Bug corrigido: CMD direto sem instanciar bash (Performance)
+      test: ["CMD", "pg_isready", "-U", "\${POSTGRES_USER}", "-d", "\${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   pgadmin:
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:latest
     container_name: ${project_name}-pgadmin
+    restart: "no"
     ports:
       - '5050:80'
     environment:
       PGADMIN_DEFAULT_EMAIL: \${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: \${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      TZ: "America/Sao_Paulo"
     depends_on:
-      - db
+      db:
+        condition: service_healthy # Bug corrigido: pgAdmin só sobe quando o banco estiver pronto
     volumes:
       - pgadmin-data:/var/lib/pgadmin
-      - ./pgadmin/servers.json:/pgadmin4/servers.json
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
     networks:
       - backend
 
 volumes:
-  pgadmin-data: {}
-  pgdata: {}
+  pgadmin-data:
+    driver: local
+  pgdata:
+    driver: local
 
 networks:
   backend:
+    driver: bridge
 EOF
 
 # 📄 src/utils/env.ts
-echo -e "\n📄 Criando src/utils/env.ts para validação de variáveis de ambiente..."
+echo -e "\n📄 Criando validação Zod..."
 cat > src/utils/env.ts <<EOF
 import { z } from "zod";
+import "dotenv/config";
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(3333),
-  DATABASE_URL: z
-    .string()
-    .url()
-    .startsWith("postgres://")
-    .default("postgres://localhost:5432/${project_name}_db"),
+  DATABASE_URL: z.string().url().startsWith("postgresql://"),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   CORS_ORIGIN: z.string().optional(),
   API_URL: z.string().optional(),
@@ -203,8 +225,42 @@ if (!result.success) {
 export const env = result.data;
 EOF
 
+# 📄 Instanciação Global do Prisma (src/lib/prisma.ts)
+cat > src/lib/prisma.ts <<EOF
+import { PrismaClient } from '@prisma/client';
+import { env } from '../utils/env.js';
+
+export const prisma = new PrismaClient({
+  log: env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+});
+EOF
+
+# 📄 src/routes/index.ts
+cat > src/routes/index.ts <<EOF
+import type { FastifyInstance } from 'fastify';
+import { getExample } from './get-example.js';
+
+export async function registerRoutes(app: FastifyInstance) {
+  app.register(getExample, { prefix: '/api' });
+}
+EOF
+
+# 📄 src/routes/get-example.ts (Com Prisma)
+cat > src/routes/get-example.ts <<EOF
+import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { prisma } from '../lib/prisma.js';
+
+export const getExample: FastifyPluginAsyncZod = async (app) => {
+  app.get('/hello', async () => {
+    // Exemplo de query validando a conexão (não falhará se a tabela estiver vazia)
+    const count = await prisma.example.count();
+    return { message: 'Hello, Fastify with Prisma ORM!', records: count };
+  });
+};
+EOF
+
 # 📄 src/server.ts
-echo -e "\n📄 Criando src/server.ts com configuração inicial..."
+echo -e "\n📄 Criando src/server.ts..."
 cat > src/server.ts <<EOF
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
@@ -217,22 +273,18 @@ import {
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
 
-import { getExample } from "./routes/get-example.js";
+import { registerRoutes } from "./routes/index.js";
 import { env } from "./utils/env.js";
 
 const config = env.CORS_ORIGIN;
-const PORT = env.PORT || 3333;
+const PORT = env.PORT;
 const API_URL = env.API_URL || \`http://localhost:\${PORT}\`;
 
 const app = Fastify({
   logger: {
     transport: {
       target: "pino-pretty",
-      options: {
-        translateTime: "HH:MM:ss Z",
-        ignore: "pid,hostname",
-        colorize: true,
-      },
+      options: { translateTime: "HH:MM:ss Z", ignore: "pid,hostname", colorize: true },
     },
   },
 }).withTypeProvider<ZodTypeProvider>();
@@ -255,48 +307,23 @@ app.register(cors, {
 
 app.register(swagger, {
   openapi: {
-    info: {
-      title: "",
-      description: "",
-      version: "1.0.0",
-    },
+    info: { title: "$project_name API", description: "Documentação", version: "1.0.0" },
     servers: [{ url: API_URL }],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
-        },
-      },
-    },
-    security: [{ bearerAuth: [] }],
   },
 });
 
-app.register(swaggerUI, {
-  routePrefix: "/docs",
-  uiConfig: {
-    docExpansion: "list",
-    deepLinking: true,
-  },
-});
+app.register(swaggerUI, { routePrefix: "/docs" });
 
-app.get("/health", () => {
-  return { status: "ok", timestamp: new Date().toISOString() };
-});
+app.get("/health", () => ({ status: "ok", timestamp: new Date().toISOString() }));
 
-app.register(getExample);
+// Registra todas as rotas centralizadas
+app.register(registerRoutes);
 
 const start = async () => {
   try {
     await app.listen({ port: PORT, host: "0.0.0.0" });
-
     const address = app.server.address();
-    const host =
-      typeof address === "string"
-        ? address
-        : \`http://localhost:\${address?.port}\`;
+    const host = typeof address === "string" ? address : \`http://localhost:\${address?.port}\`;
 
     app.log.info(\`🚀 API rodando em: \${host}\`);
     app.log.info(\`📘 Swagger Docs: \${host}/docs\`);
@@ -309,108 +336,87 @@ const start = async () => {
 start();
 EOF
 
-# 📄 src/routes/get-rooms.ts
-cat > src/routes/get-example.ts <<EOF
-import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
+# 📄 ESLint 9 (Flat Config)
+echo -e "\n📄 Criando ESLint 9 e Prettier..."
+cat > eslint.config.mjs <<EOF
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import eslintConfigPrettier from 'eslint-config-prettier';
 
-export const getExample: FastifyPluginAsyncZod = async app => {
-  app.get('/hello', async () => {
-    return 'Hello, Fastify with TypeScript and PostgreSQL!'
-  })
+export default tseslint.config(
+  eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
+  eslintConfigPrettier, // Desativa regras do ESLint que conflitam com o Prettier
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
+  {
+    // Ignora arquivos que não devem ser lintados
+    ignores: ['dist/**', 'node_modules/**', 'eslint.config.mjs'],
+  }
+);
+EOF
+
+# 📄 Prettier
+cat > .prettierrc <<EOF
+{
+  "semi": true,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "arrowParens": "always",
+  "plugins": []
 }
 EOF
 
-# Cria o arquivo biome.json com configurações ideais
-echo -e "\n📄 Criando biome.json com regras recomendadas..."
-cat > biome.json <<EOF
+cat > .prettierignore <<EOF
+node_modules
+dist
+.env
+EOF
+
+# 📄 VS Code Config
+mkdir -p .vscode
+cat > .vscode/settings.json <<EOF
 {
-  "\$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "formatter": {
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineWidth": 80
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
   },
-  "javascript": {
-    "formatter": {
-      "arrowParentheses": "asNeeded",
-      "jsxQuoteStyle": "double",
-      "quoteStyle": "single",
-      "semicolons": "asNeeded",
-      "trailingCommas": "es5"
-    }
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "a11y": {
-        "noSvgWithoutTitle": "off"
-      },
-      "suspicious": {
-        "noArrayIndexKey": "info"
-      }
-    }
+  "eslint.useFlatConfig": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }
 EOF
 
-mkdir -p .vscode
-cat > .vscode/settings.json <<EOF
-{
-  "[javascript]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[json]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[markdown]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[yaml]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "editor.codeActionsOnSave": {
-    "source.organizeImports.biome": true
-  },
-  "editor.formatOnSave": true,
-  "prettier.enable": false,
-  "biome.enableLinter": true,
-  "biome.enableFormatter": true
-}
-EOF
-
-cat > drizzle.config.ts <<EOF
-import { defineConfig } from 'drizzle-kit';
-import { env } from './src/utils/env';
-
-export default defineConfig({
-  schema: './src/db/schema/**.ts',
-  dialect: 'postgresql',
-  out: './src/db/migrations',
-  dbCredentials: {
-    url: env.DATABASE_URL,
-  },
-  casing: 'snake_case',
-});
-EOF
-
+# 📄 Gitignore Corrigido
 cat > .gitignore <<EOF
-/node_modules
-/dist
-/.env
-/.vscode
+node_modules
+dist
+.env
+.eslintcache
+
+# Editor
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 EOF
 
-# 🔧 Ajustes finais de estrutura
-mkdir -p docker
-touch docker/setup.sql
-
+# 🔧 Ajustes finais de estrutura e PgAdmin
 mkdir -p pgadmin
 cat > pgadmin/servers.json <<EOF
 {
@@ -428,36 +434,25 @@ cat > pgadmin/servers.json <<EOF
 }
 EOF
 
-mkdir -p src/db/schema
-
 # 🧬 Inicializa Git + GitHub
 read -p "🔗 Deseja criar repositório Git local? (y/n): " git_init
 if [[ "$git_init" == "y" ]]; then
   git init
   git add .
-  git commit -m "🧱 initial commit"
+  git commit -m "feat: initial commit with Fastify, Prisma, ESLint9 and Docker"
 
   read -p "🌐 Deseja criar um repositório no GitHub e fazer push? (y/n): " gh_push
   if [[ "$gh_push" == "y" ]]; then
     read -p "🔐 Qual o nome do repositório no GitHub (ou ENTER para '$project_name')? " repo_name
     repo_name=${repo_name:-$project_name}
-
     gh repo create "$repo_name" --public --source=. --remote=origin --push
     echo "✅ Repositório enviado para o GitHub!"
   fi
 fi
 
-# read -p "🐳 Deseja iniciar os containers com Docker Compose agora? (y/n): " run_docker
-# if [[ "$run_docker" == "y" ]]; then
-#   cd "$project_name"
-#   docker-compose up -d
-#   echo "✅ Containers iniciados com sucesso!"
-# fi
-
-
 echo -e "\n✅ Projeto '$project_name' criado com sucesso!"
-echo -e "👉 Para rodar o projeto:\n"
-echo "Acesse o projeto cd '$project_name'"
-echo "1️⃣ docker-compose up -d"
-echo "2️⃣ pnpm dev (após configurar script no package.json)"
-echo "3️⃣ crie os scripts abaixo no package.json para iniciar o servidor"
+echo -e "👉 Siga os passos para rodar a aplicação:\n"
+echo "1️⃣ cd $project_name"
+echo "2️⃣ pnpm run docker:up        # Sobe o banco Postgres e pgAdmin"
+echo "3️⃣ pnpm run db:migrate       # Cria a estrutura do Prisma no banco"
+echo "4️⃣ pnpm run dev              # Inicia o servidor Fastify"
