@@ -1,7 +1,7 @@
 #!/bin/bash
 
 clear
-echo "🚀 Criador de API Fastify com Docker, Prisma 7 (Driver Nativo), PostgreSQL, ESLint 9 e Prettier"
+echo "🚀 Criador de API Fastify com Clean Architecture, DDD, Prisma 7, Docker, e ESLint 9"
 
 read -p "📦 Digite o nome do projeto: " project_name
 project_name="${project_name//_/-}" 
@@ -15,19 +15,18 @@ mkdir "$project_name"
 cd "$project_name" || exit 1
 
 # 🧱 Inicializa projeto Node
-echo -e "\n🧱 Inicializando projeto Node.js com TypeScript e Fastify 🔥🚀..."
+echo -e "\n🧱 Inicializando projeto Node.js com TypeScript 🔥🚀..."
 
-# Cria package.json otimizado
 cat > package.json <<EOF
 {
   "name": "$project_name",
   "version": "1.0.0",
   "type": "module",
-  "main": "dist/server.js",
+  "main": "dist/infra/http/server.js",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch src/infra/http/server.ts",
     "build": "tsc && tsc-alias",
-    "start": "node dist/server.js",
+    "start": "node dist/infra/http/server.js",
     "check": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -37,9 +36,7 @@ cat > package.json <<EOF
     "db:studio": "prisma studio",
     "docker:up": "docker compose up -d",
     "docker:stop": "docker compose stop",
-    "docker:down": "docker compose down",
-    "docker:clean": "docker compose down -v",
-    "docker:logs": "docker compose logs -f"
+    "docker:down": "docker compose down"
   },
   "packageManager": "pnpm@10.11.0"
 }
@@ -78,27 +75,32 @@ cat > tsconfig.json <<EOF
 }
 EOF
 
-# 🌱 Estrutura de diretórios
-mkdir -p src/utils src/routes src/services src/lib src/test src/modules prisma
+# 🌱 ESTRUTURA CLEAN ARCHITECTURE E DDD
+echo -e "\n🌱 Criando estrutura de pastas (Domain, Application, Infra)..."
+mkdir -p src/domain/examples/entities
+mkdir -p src/domain/examples/repositories
+mkdir -p src/application/examples/use-cases
+mkdir -p src/infra/http/controllers/examples
+mkdir -p src/infra/http/routes
+mkdir -p src/infra/database/prisma/repositories
+mkdir -p src/infra/env
+mkdir -p prisma
 
-# 📄 Cria arquivo de ambiente (.env) sem interpolação
+# 📄 Cria arquivo de ambiente (.env)
 cat > .env <<EOF
 PORT=3333
 NODE_ENV=development
 
-# Credenciais Docker PostgreSQL
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=senhaSegura123
 POSTGRES_DB=${project_name}_db
-
-# Prisma URL connection 
 DATABASE_URL="postgresql://postgres:senhaSegura123@localhost:5432/${project_name}_db?schema=public"
 
 API_URL=http://localhost:3333
 CORS_ORIGIN=http://localhost:3000,http://localhost:3333
 EOF
 
-# 📄 Prisma 7 - Schema
+# 📄 Prisma Schema
 cat > prisma/schema.prisma <<EOF
 generator client {
   provider = "prisma-client-js"
@@ -112,13 +114,12 @@ model Example {
   id        String   @id @default(uuid())
   name      String
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("examples")
 }
 EOF
 
-# 📄 Prisma 7 - prisma.config.ts
+# 📄 Prisma Config 7
 cat > prisma.config.ts <<EOF
 import "dotenv/config";
 import { defineConfig, env } from "prisma/config";
@@ -135,24 +136,7 @@ export default defineConfig({
 });
 EOF
 
-# 📄 Instanciação Global do Prisma
-cat > src/lib/prisma.ts <<EOF
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
-import { env } from '@/utils/env.js';
-
-const connectionString = env.DATABASE_URL;
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-
-export const prisma = new PrismaClient({
-  adapter,
-  log: env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-});
-EOF
-
-# 📄 Cria docker-compose.yml 
+# 📄 Docker Compose
 cat > docker-compose.yml <<EOF
 services:
   db:
@@ -169,8 +153,6 @@ services:
       POSTGRES_DB: \${POSTGRES_DB}
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
       TZ: "America/Sao_Paulo"
-    networks:
-      - backend
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -179,22 +161,17 @@ services:
       timeout: 2s
       retries: 10
       start_period: 5s
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          
 volumes:
   pgdata:
     driver: local
-
-networks:
-  backend:
-    driver: bridge
 EOF
 
-# 📄 src/utils/env.ts 
-cat > src/utils/env.ts <<EOF
+# ---------------------------------------------------------
+# CÓDIGO FONTE (Aplicando as Camadas)
+# ---------------------------------------------------------
+
+# 1. ENV (Infra)
+cat > src/infra/env/index.ts <<EOF
 import { z } from "zod";
 import "dotenv/config";
 
@@ -207,107 +184,186 @@ const envSchema = z.object({
 });
 
 const result = envSchema.safeParse(process.env);
-
 if (!result.success) {
-  console.error("❌ Variáveis de ambiente inválidas:", result.error.format());
+  console.error("❌ Invalid environment variables", result.error.format());
   process.exit(1);
 }
-
 export const env = result.data;
 EOF
 
-# 📄 src/routes/index.ts
-cat > src/routes/index.ts <<EOF
-import type { FastifyInstance } from 'fastify';
-import { getExample } from '@/routes/get-example.js';
+# 2. PRISMA CLIENT (Infra)
+cat > src/infra/database/prisma/index.ts <<EOF
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
+import { env } from '@/infra/env/index.js';
 
-export async function registerRoutes(app: FastifyInstance): Promise<void> {
-  await app.register(getExample, { prefix: '/api' });
+const connectionString = env.DATABASE_URL;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+
+export const prisma = new PrismaClient({
+  adapter,
+  log: env.NODE_ENV === 'development' ? ['query', 'error'] : ['error'],
+});
+EOF
+
+# 3. ENTITY (Domain - Regras de negócio puras)
+cat > src/domain/examples/entities/example.ts <<EOF
+export interface ExampleProps {
+  id: string;
+  name: string;
+  createdAt: Date;
+}
+
+// Entidade de Domínio - Não tem dependência do banco de dados
+export class Example {
+  private props: ExampleProps;
+
+  constructor(props: ExampleProps) {
+    this.props = props;
+  }
+
+  get id() { return this.props.id; }
+  get name() { return this.props.name; }
+  get createdAt() { return this.props.createdAt; }
 }
 EOF
 
-# 📄 src/routes/get-example.ts 
-cat > src/routes/get-example.ts <<EOF
-import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { prisma } from '@/lib/prisma.js';
+# 4. REPOSITORY INTERFACE (Domain - O Contrato que a Infra deve cumprir)
+cat > src/domain/examples/repositories/examples-repository.ts <<EOF
+import type { Example } from '../entities/example.js';
 
-export const getExample: FastifyPluginAsyncZod = async (app) => {
-  app.get('/hello', async () => {
-    const count = await prisma.example.count();
-    return { message: 'Hello, Fastify with Prisma ORM 7!', records: count };
+export interface ExamplesRepository {
+  create(data: { name: string }): Promise<Example>;
+  countAll(): Promise<number>;
+}
+EOF
+
+# 5. USE CASE (Application - Orquestração do Negócio)
+cat > src/application/examples/use-cases/create-example-use-case.ts <<EOF
+import type { ExamplesRepository } from '@/domain/examples/repositories/examples-repository.js';
+import type { Example } from '@/domain/examples/entities/example.js';
+
+// Inversão de Dependência (SOLID): Recebemos o contrato, não a implementação
+export class CreateExampleUseCase {
+  constructor(private examplesRepository: ExamplesRepository) {}
+
+  async execute(name: string): Promise<Example> {
+    if (name.length < 3) {
+      throw new Error('Name must have at least 3 characters.');
+    }
+    
+    // Regra de negócio orquestrada chamando o repositório
+    const example = await this.examplesRepository.create({ name });
+    return example;
+  }
+}
+EOF
+
+# 6. PRISMA REPOSITORY (Infra/Database - A Implementação real do Contrato)
+cat > src/infra/database/prisma/repositories/prisma-examples-repository.ts <<EOF
+import { prisma } from '../index.js';
+import type { ExamplesRepository } from '@/domain/examples/repositories/examples-repository.js';
+import { Example } from '@/domain/examples/entities/example.js';
+
+export class PrismaExamplesRepository implements ExamplesRepository {
+  async create(data: { name: string }): Promise<Example> {
+    const rawExample = await prisma.example.create({
+      data: { name: data.name },
+    });
+
+    // Mapeando a saída do Prisma para a nossa Entidade de Domínio Pura
+    return new Example({
+      id: rawExample.id,
+      name: rawExample.name,
+      createdAt: rawExample.createdAt,
+    });
+  }
+
+  async countAll(): Promise<number> {
+    return prisma.example.count();
+  }
+}
+EOF
+
+# 7. CONTROLLER (Infra/Http - Lidando com Requisições web)
+cat > src/infra/http/controllers/examples/create-example.controller.ts <<EOF
+import type { FastifyRequest, FastifyReply } from 'fastify';
+import { z } from 'zod';
+import { PrismaExamplesRepository } from '@/infra/database/prisma/repositories/prisma-examples-repository.js';
+import { CreateExampleUseCase } from '@/application/examples/use-cases/create-example-use-case.js';
+
+export async function createExampleController(request: FastifyRequest, reply: FastifyReply) {
+  const createSchema = z.object({
+    name: z.string().min(3),
+  });
+
+  const { name } = createSchema.parse(request.body);
+
+  // Injeção de Dependência Manual (Factory Pattern)
+  const repository = new PrismaExamplesRepository();
+  const useCase = new CreateExampleUseCase(repository);
+
+  try {
+    const example = await useCase.execute(name);
+    return reply.status(201).send({ example });
+  } catch (error) {
+    if (error instanceof Error) {
+      return reply.status(400).send({ message: error.message });
+    }
+    throw error;
+  }
+}
+EOF
+
+# 8. ROTAS (Infra/Http)
+cat > src/infra/http/routes/examples.routes.ts <<EOF
+import type { FastifyInstance } from 'fastify';
+import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { createExampleController } from '../controllers/examples/create-example.controller.js';
+import { PrismaExamplesRepository } from '@/infra/database/prisma/repositories/prisma-examples-repository.js';
+
+export const examplesRoutes: FastifyPluginAsyncZod = async (app: FastifyInstance) => {
+  app.post('/examples', createExampleController);
+
+  // Rota simples apenas para contar, usando direto o repositório para query básica
+  app.get('/examples/count', async () => {
+    const repo = new PrismaExamplesRepository();
+    const count = await repo.countAll();
+    return { count };
   });
 };
 EOF
 
-# 📄 src/server.ts 
-echo -e "\n📄 Criando src/server.ts..."
-cat > src/server.ts <<EOF
+# 9. SERVER (Infra/Http)
+cat > src/infra/http/server.ts <<EOF
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
-import swagger from "@fastify/swagger";
-import swaggerUI from "@fastify/swagger-ui";
 import Fastify from "fastify";
-import {
-  serializerCompiler,
-  validatorCompiler,
-  type ZodTypeProvider,
-} from "fastify-type-provider-zod";
+import { serializerCompiler, validatorCompiler, type ZodTypeProvider } from "fastify-type-provider-zod";
+import { env } from "@/infra/env/index.js";
+import { examplesRoutes } from "./routes/examples.routes.js";
 
-import { registerRoutes } from "@/routes/index.js";
-import { env } from "@/utils/env.js";
-
-const config = env.CORS_ORIGIN;
-const PORT = env.PORT;
-const API_URL = env.API_URL ?? \`http://localhost:\${PORT}\`;
-
-const app = Fastify({
-  logger: {
-    transport: {
-      target: "pino-pretty",
-      options: { translateTime: "HH:MM:ss Z", ignore: "pid,hostname", colorize: true },
-    },
-  },
-}).withTypeProvider<ZodTypeProvider>();
+const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
 
 app.setSerializerCompiler(serializerCompiler);
 app.setValidatorCompiler(validatorCompiler);
 
 await app.register(helmet, { contentSecurityPolicy: false });
-await app.register(cors, {
-  origin: (origin, cb) => {
-    const allowedOrigins = config?.split(",") ?? [];
-    if (!origin || allowedOrigins.includes(origin)) {
-      cb(null, true);
-    } else {
-      cb(new Error("Origem não permitida"), false);
-    }
-  },
-  credentials: true,
-});
-
-await app.register(swagger, {
-  openapi: {
-    info: { title: "$project_name API", description: "Documentação", version: "1.0.0" },
-    servers: [{ url: API_URL }],
-  },
-});
-
-await app.register(swaggerUI, { routePrefix: "/docs" });
+await app.register(cors, { origin: true });
 
 app.get("/health", async () => ({ status: "ok", timestamp: new Date().toISOString() }));
 
-await app.register(registerRoutes);
+// Registro centralizado de rotas
+await app.register(examplesRoutes, { prefix: '/api' });
 
 const start = async () => {
   try {
-    await app.listen({ port: PORT, host: "0.0.0.0" });
-    const address = app.server.address();
-    const host = typeof address === "string" ? address : \`http://localhost:\${address?.port}\`;
-
-    app.log.info(\`🚀 API rodando em: \${host}\`);
-    app.log.info(\`📘 Swagger Docs: \${host}/docs\`);
+    await app.listen({ port: env.PORT, host: "0.0.0.0" });
+    app.log.info(\`🚀 API rodando na porta \${env.PORT}\`);
   } catch (err) {
-    app.log.error(err as Error, 'Erro ao iniciar o servidor:');
+    app.log.error(err);
     process.exit(1);
   }
 };
@@ -315,8 +371,7 @@ const start = async () => {
 void start();
 EOF
 
-# 📄 ESLint 9 (Flat Config)
-echo -e "\n📄 Criando ESLint 9 e Prettier..."
+# 📄 ESLint e Prettier
 cat > eslint.config.mjs <<EOF
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
@@ -329,26 +384,19 @@ export default tseslint.config(
   eslintConfigPrettier, 
   {
     languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-floating-promises': 'off', 
       '@typescript-eslint/no-misused-promises': 'off'
     },
   },
-  {
-    ignores: ['dist/**', 'node_modules/**', 'eslint.config.mjs', 'prisma.config.ts'],
-  }
+  { ignores: ['dist/**', 'node_modules/**', 'eslint.config.mjs', 'prisma.config.ts'] }
 );
 EOF
 
-# 📄 Prettier
 cat > .prettierrc <<EOF
 {
   "semi": true,
@@ -356,24 +404,19 @@ cat > .prettierrc <<EOF
   "tabWidth": 2,
   "trailingComma": "all",
   "printWidth": 100,
-  "arrowParens": "always",
-  "plugins": []
+  "arrowParens": "always"
 }
 EOF
 
-# 📄 VS Code Config
+# 📄 Arquivos de Suporte
 mkdir -p .vscode
 cat > .vscode/settings.json <<EOF
 {
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
-  },
+  "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
   "eslint.useFlatConfig": true,
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" }
 }
 EOF
 
@@ -384,10 +427,9 @@ dist
 .eslintcache
 .vscode/*
 !.vscode/settings.json
-!.vscode/extensions.json
 EOF
 
-# Gera arquivo ts inicial Prisma
+# Prisma Generate
 pnpm run db:generate
 
 # -----------------------------------------------------------------------------
@@ -397,57 +439,18 @@ echo -e "\n--------------------------------------------------"
 echo -e "🐙 Configuração de Controle de Versão (Git/GitHub)"
 echo -e "--------------------------------------------------\n"
 
-read -p "Deseja inicializar o repositório Git local e fazer o 1º commit? (y/n): " git_init
+read -p "Deseja inicializar o repositório Git e Github? (y/n): " git_init
 if [[ "$git_init" == "y" || "$git_init" == "Y" ]]; then
-  
-  if ! command -v git &> /dev/null; then
-    echo "⚠️  Git não encontrado. Instale-o primeiro."
-  else
-    git init
-    git add .
-    git commit -m "feat: initial commit (Fastify, Prisma 7, Docker, ESLint9)"
-    git branch -M main
-    echo "✅ Repositório local inicializado e commitado!"
+  git init
+  git add .
+  git commit -m "feat: setup DDD and Clean Architecture (Fastify/Prisma 7)"
+  git branch -M main
+  echo "✅ Commit realizado!"
 
-    read -p "Deseja criar o repositório no GitHub e fazer o push via GitHub CLI (gh)? (y/n): " gh_push
-    if [[ "$gh_push" == "y" || "$gh_push" == "Y" ]]; then
-      
-      # Verifica se a ferramenta 'gh' está instalada
-      if ! command -v gh &> /dev/null; then
-        echo "⚠️  GitHub CLI (gh) não instalado. Faça o download em: https://cli.github.com/"
-      else
-        # Verifica se o usuário está logado
-        if ! gh auth status &> /dev/null; then
-          echo "⚠️  Você não está autenticado no GitHub CLI."
-          echo "Rodando 'gh auth login' para você. Siga os passos na tela:"
-          gh auth login
-        fi
-
-        # Verifica novamente se logou com sucesso
-        if gh auth status &> /dev/null; then
-          read -p "O repositório deve ser Público ou Privado? (1=Public, 2=Private): " repo_visibility
-          VISIBILITY="--private"
-          if [[ "$repo_visibility" == "1" ]]; then
-             VISIBILITY="--public"
-          fi
-          
-          echo "🌐 Criando repositório '$project_name' no GitHub e subindo o código..."
-          
-          # gh repo create <nome> --public/private --source=. --remote=origin --push
-          gh repo create "$project_name" $VISIBILITY --source=. --remote=origin --push
-          
-          echo "✅ Código enviado com sucesso para o GitHub!"
-        else
-          echo "❌ Falha na autenticação do GitHub CLI. Processo abortado."
-        fi
-      fi
-    fi
+  if command -v gh &> /dev/null; then
+    gh repo create "$project_name" --private --source=. --remote=origin --push
+    echo "✅ Código enviado para o GitHub!"
   fi
 fi
 
-echo -e "\n🎉 Tudo pronto! Projeto '$project_name' montado com sucesso!"
-echo -e "👉 Para rodar a aplicação:\n"
-echo "1️⃣  cd $project_name"
-echo "2️⃣  pnpm run docker:up        # Sobe o banco de dados no Docker"
-echo "3️⃣  pnpm run db:migrate       # Aplica as migrations (Cria as tabelas no Postgres)"
-echo "4️⃣  pnpm run dev              # Inicia o servidor Fastify"
+echo -e "\n🎉 Arquitetura DDD e Clean Arch montada com sucesso!"
